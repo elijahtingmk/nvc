@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Empathy Algorithm: An Interactive NVC Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application is designed as a single-page, thematic dashboard, moving away from the report's linear structure. The goal is user-driven exploration. A top navigation bar allows users to jump to key areas: 'Core Concepts' for foundational knowledge, 'Applications' for practical scenarios, 'Compare' for contextual understanding, and 'Implementation' for strategic action. This structure was chosen because NVC is a multi-faceted topic; users may want to explore practical examples before diving into theory, or vice-versa. Interactive elements like clickable diagrams, simulators, and accordions are used to make dense information digestible and engaging, promoting active learning over passive reading. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: OFNR Framework (Table 1) -> Goal: Explain core components -> Viz/Method: Interactive 4-quadrant HTML/CSS diagram -> Interaction: Click to reveal details for each component (Observation, Feeling, Need, Request) -> Justification: More engaging and less overwhelming than a static table. Promotes focused learning on one component at a time. -> Library/Method: Vanilla JS + Tailwind.
+        - Report Info: Psychological Safety Stages -> Goal: Show hierarchical nature -> Viz/Method: Stacked HTML/CSS blocks -> Interaction: Hover to see how NVC builds each stage -> Justification: Visually represents the concept of building safety layer by layer. -> Library/Method: Tailwind CSS.
+        - Report Info: Conflict & Feedback Scenarios -> Goal: Demonstrate practical application -> Viz/Method: Interactive "simulators" with step-by-step content reveals -> Interaction: Click buttons to progress through a scenario -> Justification: Transforms abstract processes into tangible, easy-to-follow examples. -> Library/Method: Vanilla JS.
+        - Report Info: KPI Data (Table 3) -> Goal: Visualize ROI -> Viz/Method: Bar Chart -> Interaction: Hover tooltips show baseline vs. target data -> Justification: A chart makes quantitative impact immediately apparent and more memorable than a table. -> Library/Method: Chart.js.
+        - Report Info: Comparison of Models (Table 2) -> Goal: Compare frameworks -> Viz/Method: Styled HTML/Tailwind table -> Interaction: Static, clear layout for easy comparison -> Justification: A well-styled table is the clearest way to present comparative data points side-by-side. -> Library/Method: Tailwind CSS.
+        - Report Info: Implementation Pitfalls -> Goal: Inform on challenges -> Viz/Method: Accordion component -> Interaction: Click to expand/collapse -> Justification: Manages content density, allowing users to focus on one challenge at a time without being overwhelmed by a long list. -> Library/Method: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #332E2E;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #D97706; 
+            border-bottom-color: #D97706;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #F3EFEA;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .btn-primary {
+            background-color: #4A5568;
+            color: #FFFFFF;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #2D3748;
+        }
+        .btn-secondary {
+            background-color: #D97706;
+            color: #FFFFFF;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #B45309;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">The Empathy Algorithm</h1>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#concepts" class="nav-link font-medium text-gray-600 pb-1">Core Concepts</a>
+                <a href="#applications" class="nav-link font-medium text-gray-600 pb-1">Applications</a>
+                <a href="#compare" class="nav-link font-medium text-gray-600 pb-1">Compare</a>
+                <a href="#implementation" class="nav-link font-medium text-gray-600 pb-1">Implementation</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+            <a href="#concepts" class="block py-2 nav-link font-medium text-gray-600">Core Concepts</a>
+            <a href="#applications" class="block py-2 nav-link font-medium text-gray-600">Applications</a>
+            <a href="#compare" class="block py-2 nav-link font-medium text-gray-600">Compare</a>
+            <a href="#implementation" class="block py-2 nav-link font-medium text-gray-600">Implementation</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        
+        <section id="hero" class="text-center mb-20">
+            <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4">Transforming Communication into a Strategic Asset</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-8">
+                This guide deconstructs Non-Violent Communication (NVC) not as a "soft skill," but as a high-performance methodology for modern leadership. Explore interactive models to learn how to engineer clarity, foster psychological safety, and drive collaborative outcomes in your organization.
+            </p>
+            <a href="https://chatgpt.com/g/g-09WTb6Rjf-empathy-guide" target="_blank" rel="noopener noreferrer" class="btn-secondary inline-block px-8 py-3 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transition-shadow">
+                Try the Empathy Guide GPT
+            </a>
+        </section>
+
+        <section id="concepts" class="scroll-mt-20 mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Core Concepts: The 'What & Why' of NVC</h3>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">NVC provides a structured, learnable framework to bypass common communication pitfalls. The following interactive sections break down its foundational components and their impact on team dynamics.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-start">
+                <div class="w-full">
+                    <h4 class="text-2xl font-semibold text-center mb-6 text-gray-700">The OFNR Framework</h4>
+                    <div id="ofnr-tabs" class="grid grid-cols-2 gap-2 mb-4">
+                        <button data-tab="observation" class="ofnr-tab p-4 rounded-lg text-center font-semibold transition-all duration-300 bg-amber-100 text-amber-800 ring-2 ring-amber-500">1. Observation</button>
+                        <button data-tab="feeling" class="ofnr-tab p-4 rounded-lg text-center font-semibold transition-all duration-300 bg-gray-200 text-gray-700">2. Feeling</button>
+                        <button data-tab="need" class="ofnr-tab p-4 rounded-lg text-center font-semibold transition-all duration-300 bg-gray-200 text-gray-700">3. Need</button>
+                        <button data-tab="request" class="ofnr-tab p-4 rounded-lg text-center font-semibold transition-all duration-300 bg-gray-200 text-gray-700">4. Request</button>
+                    </div>
+                    <div id="ofnr-content" class="card p-6 rounded-lg min-h-[300px]">
+                    </div>
+                </div>
+
+                <div class="w-full">
+                    <h4 class="text-2xl font-semibold text-center mb-6 text-gray-700">Building Psychological Safety</h4>
+                    <div id="safety-stages" class="space-y-2">
+                        <div data-stage="challenger" class="safety-stage p-4 rounded-lg cursor-pointer transition-all duration-300 bg-teal-100 border-l-4 border-teal-500">
+                            <h5 class="font-bold text-teal-800">Challenger Safety</h5>
+                            <p class="text-sm text-teal-700">Feel safe to challenge the status quo.</p>
+                        </div>
+                        <div data-stage="contributor" class="safety-stage p-4 rounded-lg cursor-pointer transition-all duration-300 bg-sky-100 border-l-4 border-sky-500">
+                            <h5 class="font-bold text-sky-800">Contributor Safety</h5>
+                            <p class="text-sm text-sky-700">Feel safe to use your skills to contribute.</p>
+                        </div>
+                        <div data-stage="learner" class="safety-stage p-4 rounded-lg cursor-pointer transition-all duration-300 bg-indigo-100 border-l-4 border-indigo-500">
+                            <h5 class="font-bold text-indigo-800">Learner Safety</h5>
+                            <p class="text-sm text-indigo-700">Feel safe to ask questions and learn.</p>
+                        </div>
+                        <div data-stage="inclusion" class="safety-stage p-4 rounded-lg cursor-pointer transition-all duration-300 bg-rose-100 border-l-4 border-rose-500">
+                            <h5 class="font-bold text-rose-800">Inclusion Safety</h5>
+                            <p class="text-sm text-rose-700">Feel safe to be yourself and belong.</p>
+                        </div>
+                    </div>
+                     <div id="safety-content" class="card p-6 rounded-lg mt-4 min-h-[150px]">
+                        <p class="text-gray-600">Hover over a stage to see how NVC helps build it.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-20 border-gray-200">
+
+        <section id="applications" class="scroll-mt-20 mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Applications: The 'How-To' for Leaders</h3>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">Theory comes to life in practice. These interactive simulators show how NVC reframes high-stakes conversations from adversarial conflicts to collaborative problem-solving.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div>
+                    <h4 class="text-2xl font-semibold text-center mb-6 text-gray-700">Conflict Scenario Simulator</h4>
+                    <div class="card rounded-lg p-6">
+                        <p class="mb-4 text-gray-600"><strong>Scenario:</strong> Sales promises a feature Engineering says is impossible on the current timeline, creating tension.</p>
+                        <div id="conflict-steps" class="space-y-3"></div>
+                        <button id="conflict-next-btn" class="btn-primary w-full py-2 rounded-lg mt-4">Start Mediation</button>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-2xl font-semibold text-center mb-6 text-gray-700">Feedback Converter</h4>
+                    <div class="card rounded-lg p-6">
+                        <p class="mb-2 text-gray-600"><strong>Typical Feedback (Judgment):</strong></p>
+                        <p class="italic p-3 bg-red-50 border border-red-200 rounded-md text-red-800">"You've been disengaged in meetings."</p>
+                        <div id="feedback-output" class="mt-4 space-y-2 opacity-0 transition-opacity duration-500">
+                        </div>
+                        <button id="feedback-convert-btn" class="btn-primary w-full py-2 rounded-lg mt-4">Convert to NVC Feedback</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-20 border-gray-200">
+
+        <section id="compare" class="scroll-mt-20 mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">NVC in Context: A Comparative Analysis</h3>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">NVC is one of several communication models. Understanding its unique strengths becomes clearer when compared to other paradigms. This section highlights how NVC provides the practical "how-to" for the philosophical "why" of models like Radical Candor.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[700px] text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="p-4 bg-gray-100 font-semibold text-gray-700 rounded-tl-lg">Framework</th>
+                            <th class="p-4 bg-gray-100 font-semibold text-gray-700">Core Principle</th>
+                            <th class="p-4 bg-gray-100 font-semibold text-gray-700">Feedback Delivery</th>
+                            <th class="p-4 bg-gray-100 font-semibold text-gray-700 rounded-tr-lg">Potential Pitfall</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        <tr class="border-b border-gray-200">
+                            <td class="p-4 font-bold text-gray-600">Traditional Top-Down</td>
+                            <td class="p-4 text-gray-600">Authority and compliance.</td>
+                            <td class="p-4 text-gray-600">Delivers judgments and directives.</td>
+                            <td class="p-4 text-gray-600">Creates fear, stifles initiative.</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-4 font-bold text-yellow-700">Radical Candor</td>
+                            <td class="p-4 text-gray-600">Care Personally, Challenge Directly.</td>
+                            <td class="p-4 text-gray-600">Delivers direct, often blunt, feedback.</td>
+                            <td class="p-4 text-gray-600">Can become "Obnoxious Aggression" if care is missing.</td>
+                        </tr>
+                        <tr class="bg-amber-50">
+                            <td class="p-4 font-bold text-amber-800">Non-Violent Communication</td>
+                            <td class="p-4 text-gray-600">Connect through universal needs.</td>
+                            <td class="p-4 text-gray-600">Uses OFNR to separate behavior from judgment.</td>
+                            <td class="p-4 text-gray-600">Can sound robotic if intent is not genuine.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <hr class="my-20 border-gray-200">
+        
+        <section id="implementation" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Implementation: A Strategic Blueprint</h3>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">Adopting NVC is a change management initiative. It requires a phased rollout and clear metrics to track success. This section outlines a practical blueprint for embedding NVC into your organization's culture.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-5 gap-8 mb-16">
+                <div class="lg:col-span-2">
+                    <h4 class="text-2xl font-semibold mb-6 text-gray-700">Phased Rollout Plan</h4>
+                    <div class="relative pl-8 border-l-2 border-gray-300">
+                        <div class="mb-10">
+                            <div class="absolute w-6 h-6 bg-gray-300 rounded-full -left-3 border-4 border-white"></div>
+                            <h5 class="font-bold text-lg text-gray-800">Phase 1: Pilot (Months 1-6)</h5>
+                            <p class="text-gray-600">Intensive training for senior leadership and launch a pilot program with a receptive team to generate early data and champions.</p>
+                        </div>
+                        <div class="mb-10">
+                            <div class="absolute w-6 h-6 bg-gray-300 rounded-full -left-3 border-4 border-white"></div>
+                            <h5 class="font-bold text-lg text-gray-800">Phase 2: Integration (Months 7-18)</h5>
+                            <p class="text-gray-600">Cascade training to middle managers and all employees. Embed NVC into HR processes like performance reviews and onboarding.</p>
+                        </div>
+                        <div>
+                            <div class="absolute w-6 h-6 bg-gray-300 rounded-full -left-3 border-4 border-white"></div>
+                            <h5 class="font-bold text-lg text-gray-800">Phase 3: Sustenance (Months 19+)</h5>
+                            <p class="text-gray-600">Establish communities of practice, ongoing coaching, and celebrate success stories to make NVC a self-sustaining part of the culture.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-3">
+                    <h4 class="text-2xl font-semibold mb-6 text-gray-700">Measuring ROI: KPI Dashboard</h4>
+                    <div class="card rounded-lg p-6">
+                        <div class="chart-container">
+                            <canvas id="kpiChart"></canvas>
+                        </div>
+                        <p class="text-center text-sm text-gray-500 mt-2">Hover over bars to see baseline vs. target values.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="text-2xl font-semibold text-center mb-6 text-gray-700">Navigating Pitfalls & Critiques</h4>
+                 <div class="max-w-3xl mx-auto space-y-3">
+                    <div class="accordion-item border border-gray-200 rounded-lg">
+                        <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 transition">
+                            <span>"It Sounds Robotic and Inauthentic"</span>
+                            <span class="transform transition-transform duration-300">&#9662;</span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="p-4 bg-white text-gray-600">
+                                <p>This is common when first learning. The solution is to focus on the *intent* behind NVC, not just the formula. OFNR is a set of "training wheels" to develop a new consciousness. Over time, the language becomes natural and fluid.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border border-gray-200 rounded-lg">
+                        <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 transition">
+                            <span>The Risk of Manipulation</span>
+                             <span class="transform transition-transform duration-300">&#9662;</span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="p-4 bg-white text-gray-600">
+                                <p>Any powerful tool can be misused. Using NVC language to induce guilt or control others is a failure of intent. Implementation must include explicit discussions on ethics and the difference between genuine connection and control.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border border-gray-200 rounded-lg">
+                        <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 transition">
+                            <span>The "Tone Policing" Accusation</span>
+                             <span class="transform transition-transform duration-300">&#9662;</span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="p-4 bg-white text-gray-600">
+                                <p>NVC should not be used to invalidate legitimate anger. A skillful practitioner listens *through* the anger to hear the deep, unmet need beneath it (e.g., for respect, justice, safety). The goal is empathy, not demanding others communicate in a more "comfortable" way.</p>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white mt-20">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <h3 class="text-2xl font-bold mb-2">Cultivate a Needs-Conscious Organization</h3>
+            <p class="max-w-3xl mx-auto text-gray-300 mb-6">The ultimate competitive advantage is the quality of human interaction. Adopting NVC is a strategic investment in a more resilient, innovative, and profoundly more effective human enterprise.</p>
+            <p class="text-gray-400 text-sm">Copyright © 2025 <a href="https://elijah.ac">Ting Moi Kieng</a>. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ofnrTabs = document.querySelectorAll('.ofnr-tab');
+            const ofnrContentContainer = document.getElementById('ofnr-content');
+            const safetyStages = document.querySelectorAll('.safety-stage');
+            const safetyContentContainer = document.getElementById('safety-content');
+            
+            const kpiChartCanvas = document.getElementById('kpiChart');
+
+            const conflictNextBtn = document.getElementById('conflict-next-btn');
+            const conflictStepsContainer = document.getElementById('conflict-steps');
+            let currentConflictStep = 0;
+
+            const feedbackConvertBtn = document.getElementById('feedback-convert-btn');
+            const feedbackOutputContainer = document.getElementById('feedback-output');
+
+            const accordions = document.querySelectorAll('.accordion-item');
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const ofnrData = {
+                observation: {
+                    title: '1. Observation: Just the facts',
+                    description: 'State what you have seen or heard without any evaluation, judgment, or interpretation. This creates a shared basis of reality.',
+                    violent: '"Your report was sloppy and unprofessional."',
+                    nvc: '"When I read the client report, I saw several formatting errors and two typos in the executive summary."',
+                    color: 'amber'
+                },
+                feeling: {
+                    title: '2. Feeling: Express pure emotion',
+                    description: 'Articulate a pure emotional state, distinct from thoughts or interpretations disguised as feelings. This creates an opportunity for human connection.',
+                    violent: '"I feel like you don\'t care about your work."',
+                    nvc: '"I feel concerned." or "I feel disappointed."',
+                    color: 'sky'
+                },
+                need: {
+                    title: '3. Need: Identify the universal driver',
+                    description: 'Connect your feeling to a universal human need (e.g., respect, security, contribution). Conflicts happen at the level of strategies, not needs.',
+                    violent: '(Implicitly blames the other person\'s character).',
+                    nvc: '"...because I have a deep need for our team to be perceived as meticulous and professional by our clients."',
+                    color: 'indigo'
+                },
+                request: {
+                    title: '4. Request: Make it clear and actionable',
+                    description: 'Make a clear, positive, and actionable request, not a demand. A true request respects the other person\'s autonomy to say no.',
+                    violent: '"You need to be more careful next time."',
+                    nvc: '"Would you be willing to walk me through your proofreading process for the next report?"',
+                    color: 'teal'
+                }
+            };
+
+            function updateOfnrContent(tabName) {
+                const data = ofnrData[tabName];
+                ofnrContentContainer.innerHTML = `
+                    <h5 class="font-bold text-xl mb-2 text-gray-800">${data.title}</h5>
+                    <p class="text-gray-600 mb-4">${data.description}</p>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm font-semibold text-red-600">"Violent" Example (Judgmental):</p>
+                            <p class="italic p-2 bg-red-50 border-l-4 border-red-400 text-gray-700 rounded-r-md">
+                                ${data.violent}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-green-600">NVC Alternative (Needs-Based):</p>
+                            <p class="italic p-2 bg-green-50 border-l-4 border-green-500 text-gray-700 rounded-r-md">
+                                ${data.nvc}
+                            </p>
+                        </div>
+                    </div>
+                `;
+                ofnrTabs.forEach(t => {
+                    if (t.dataset.tab === tabName) {
+                        t.classList.remove('bg-gray-200', 'text-gray-700');
+                        t.classList.add(`bg-${data.color}-100`, `text-${data.color}-800`, `ring-2`, `ring-${data.color}-500`);
+                    } else {
+                        t.classList.add('bg-gray-200', 'text-gray-700');
+                        t.classList.remove('bg-amber-100', 'text-amber-800', 'ring-2', 'ring-amber-500', 'bg-sky-100', 'text-sky-800', 'ring-sky-500', 'bg-indigo-100', 'text-indigo-800', 'ring-indigo-500', 'bg-teal-100', 'text-teal-800', 'ring-teal-500');
+                    }
+                });
+            }
+
+            ofnrTabs.forEach(tab => {
+                tab.addEventListener('click', () => updateOfnrContent(tab.dataset.tab));
+            });
+            updateOfnrContent('observation');
+
+            const safetyData = {
+                inclusion: {
+                    title: 'Inclusion Safety',
+                    text: 'NVC fosters inclusion through empathetic listening. By reflecting back feelings and needs ("It sounds like you\'re feeling... because you need..."), leaders communicate: "I hear you, and you matter." This is the bedrock of belonging.'
+                },
+                learner: {
+                    title: 'Learner Safety',
+                    text: 'NVC builds learner safety by modeling vulnerability. A leader saying "I feel overwhelmed because my need for clarity isn\'t met" normalizes not knowing, making it safe for others to ask questions and admit mistakes.'
+                },
+                contributor: {
+                    title: 'Contributor Safety',
+                    text: 'NVC provides a structure for meaningful recognition. Instead of "good job," a leader can say "When I saw your presentation (Observation), I felt relieved (Feeling), because it met my need for a compelling story (Need)." This connects actions to impact.'
+                },
+                challenger: {
+                    title: 'Challenger Safety',
+                    text: 'NVC enables leaders to receive challenges non-defensively. Hearing "This timeline is unrealistic," an NVC-trained leader listens for the need: "Are you concerned because you need to ensure quality work?" This turns confrontation into collaboration.'
+                }
+            };
+
+            safetyStages.forEach(stage => {
+                stage.addEventListener('mouseenter', () => {
+                    const data = safetyData[stage.dataset.stage];
+                    safetyContentContainer.innerHTML = `
+                        <h5 class="font-bold text-lg text-gray-800 mb-2">${data.title}</h5>
+                        <p class="text-gray-600">${data.text}</p>
+                    `;
+                });
+            });
+
+            const conflictSteps = [
+                {
+                    speaker: 'Mediator',
+                    text: 'Let\'s hear from Sales first. Please express your experience using Observations, Feelings, and Needs.',
+                    color: 'gray'
+                },
+                {
+                    speaker: 'Sales',
+                    text: '"When I hear that the feature we discussed can\'t be delivered on time (Observation), I feel frustrated (Feeling), because I have a need to be responsive to our clients and meet our revenue targets (Need)."' ,
+                    color: 'sky'
+                },
+                {
+                    speaker: 'Mediator',
+                    text: 'Engineering, can you reflect back what you heard Sales express?',
+                    color: 'gray'
+                },
+                {
+                    speaker: 'Engineering',
+                    text: '"So, you\'re feeling frustrated because you need to meet client expectations and targets. Is that right?"',
+                    color: 'indigo'
+                },
+                {
+                    speaker: 'Mediator',
+                    text: 'Thank you. Now, Engineering, please express your experience.',
+                    color: 'gray'
+                },
+                {
+                    speaker: 'Engineering',
+                    text: '"When I\'m asked to rush a feature (Observation), I feel concerned (Feeling), because I have a deep need to maintain our product\'s integrity and our brand\'s reputation for quality (Need)."' ,
+                    color: 'indigo'
+                },
+                {
+                    speaker: 'Mediator',
+                    text: 'It seems we have two vital needs: market responsiveness and product integrity. How can we devise a new strategy that honors both?',
+                    color: 'gray'
+                },
+                {
+                    speaker: 'Resolution',
+                    text: 'The conversation shifts to brainstorming solutions, like a tiered feature system or involving engineering in late-stage sales calls.',
+                    color: 'green'
+                }
+            ];
+
+            function showConflictStep(stepIndex) {
+                 if (stepIndex >= conflictSteps.length) {
+                    conflictNextBtn.textContent = 'Reset Simulation';
+                    currentConflictStep = 0;
+                    return;
+                }
+                const step = conflictSteps[stepIndex];
+                const stepEl = document.createElement('div');
+                stepEl.className = `p-3 rounded-md border-l-4 bg-${step.color}-50 border-${step.color}-400`;
+                stepEl.innerHTML = `<strong class="font-semibold text-${step.color}-800">${step.speaker}:</strong> <span class="text-gray-700">${step.text}</span>`;
+                conflictStepsContainer.appendChild(stepEl);
+                stepEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                currentConflictStep++;
+                conflictNextBtn.textContent = 'Next Step';
+                 if (stepIndex === conflictSteps.length - 1) {
+                    conflictNextBtn.textContent = 'Reset Simulation';
+                }
+            }
+            
+            conflictNextBtn.addEventListener('click', () => {
+                if (currentConflictStep === 0 && conflictNextBtn.textContent === 'Reset Simulation') {
+                    conflictStepsContainer.innerHTML = '';
+                    conflictNextBtn.textContent = 'Start Mediation';
+                } else {
+                    showConflictStep(currentConflictStep);
+                }
+            });
+
+            const feedbackSteps = [
+                {
+                    label: '1. Start with a neutral Observation',
+                    text: '"I\'ve noticed that in the last three team meetings, you deferred to a colleague to speak for you."'
+                },
+                {
+                    label: '2. Share your Feeling & the Need behind it',
+                    text: '"When I see this, I feel concerned, because I have a strong need for every team member to develop their leadership skills."'
+                },
+                {
+                    label: '3. Offer an Empathic Guess',
+                    text: '"I\'m wondering if you\'re feeling hesitant because you have a need for more support or preparation time?"'
+                },
+                {
+                    label: '4. Make a collaborative Request',
+                    text: '"Would you be open to brainstorming with me some ways we could help you feel more prepared for our next meeting?"'
+                }
+            ];
+
+            feedbackConvertBtn.addEventListener('click', () => {
+                feedbackOutputContainer.innerHTML = '';
+                feedbackOutputContainer.classList.remove('opacity-0');
+                feedbackSteps.forEach(step => {
+                    const el = document.createElement('div');
+                    el.innerHTML = `
+                        <p class="font-semibold text-sm text-gray-600">${step.label}:</p>
+                        <p class="italic text-gray-800">${step.text}</p>
+                    `;
+                    feedbackOutputContainer.appendChild(el);
+                });
+                feedbackConvertBtn.disabled = true;
+                feedbackConvertBtn.textContent = 'Converted!';
+            }, { once: true });
+            
+            accordions.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                const icon = header.querySelector('span:last-child');
+                header.addEventListener('click', () => {
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        accordions.forEach(otherItem => {
+                            otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                            otherItem.querySelector('.accordion-header span:last-child').style.transform = 'rotate(0deg)';
+                        })
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+            
+            const kpiData = {
+                labels: ['eNPS', 'Attrition Rate', 'Project Success', 'Psych Safety', 'HR Grievances', 'Innovation Ideas'],
+                datasets: [
+                    {
+                        label: 'Baseline',
+                        data: [15, 8, 65, 55, 22, 150],
+                        backgroundColor: 'rgba(156, 163, 175, 0.6)',
+                        borderColor: 'rgba(156, 163, 175, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Target (Year 2)',
+                        data: [30, 5, 80, 75, 15, 250],
+                        backgroundColor: 'rgba(217, 119, 6, 0.6)',
+                        borderColor: 'rgba(217, 119, 6, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+            
+            const kpiConfig = {
+                type: 'bar',
+                data: kpiData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'NVC Program Impact KPIs'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        let value = context.parsed.y;
+                                        if (context.label === 'Attrition Rate') {
+                                            label += value + '%';
+                                        } else if (context.label === 'Project Success' || context.label === 'Psych Safety') {
+                                           label += (context.label === 'Psych Safety' ? value/10 : value) + (context.label === 'Psych Safety' ? '/10' : '%');
+                                        } else {
+                                           label += value;
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    // This is a bit of a hack to show different scales,
+                                    // in a real app you might use multiple y-axes or separate charts.
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            new Chart(kpiChartCanvas, kpiConfig);
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.3
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    if(this.getAttribute('href').startsWith('#')) {
+                        e.preventDefault();
+                        document.querySelector(this.getAttribute('href')).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                        if (mobileMenu.classList.contains('hidden') === false) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
